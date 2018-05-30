@@ -1,0 +1,5 @@
+## Interface: 70300
+## Title: NugCastFeedback
+## SavedVariablesPerCharacter: NugCastFeedbackDB
+## Author: d87
+ncf.lua
