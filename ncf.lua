@@ -39,7 +39,7 @@ function NugCastFeedback.ADDON_LOADED(self,event,arg1)
 end
 
 
-local function UNIT_SPELLCAST_SUCCEEDED_HANDLER(self, event, unit, spell, rank, lineID, spellID)
+local function UNIT_SPELLCAST_SUCCEEDED_HANDLER(self, event, unit, lineID, spellID)
     if IsPlayerSpell(spellID) then
         if spellID == 75 then return end -- Autoshot
         local index = self.iconpool.current
