@@ -1,13 +1,13 @@
 local addonName, ns = ...
 
 
-local NugCastFeedback = CreateFrame("Button", nil, UIParent)
+local NugCastFeedback = CreateFrame("Frame", nil, UIParent)
 NugCastFeedback:SetScript("OnEvent", function(self, event, ...)
     return self[event](self, event, ...)
 end)
 
--- local Masque = LibStub("Masque", true)
--- local MasqueIcon
+local Masque = LibStub("Masque", true)
+local MasqueGroup
 NugCastFeedback:RegisterEvent("ADDON_LOADED")
 
 function NugCastFeedback.ADDON_LOADED(self,event,arg1)
@@ -16,54 +16,98 @@ function NugCastFeedback.ADDON_LOADED(self,event,arg1)
         -- NugCastFeedbackDB = NugCastFeedbackDB or {}
         -- SetupDefaults(NugCastFeedbackDB, defaults)
 
+        if Masque then
+            MasqueGroup = Masque:Group(addonName, "FeedbackButtons")
+        end
+        self.mirror = self:CreateMirrorButton()
         local player = self:SpawnIconLine("player")
-        player:SetPoint("TOPLEFT", UIParent, "CENTER", 110, 15)
+        player:SetPoint("TOPLEFT", UIParent, "CENTER", 90, 75)
         player:SetSize(30, 30)
-
-
-        -- SLASH_NUGCASTFEEDBACK1= "/nugready"
-        -- SlashCmdList["NUGCASTFEEDBACK"] = function(msg)
-        --     if msg == "unlock" then
-        --         NugCastFeedback:EnableMouse(true)
-        --         NugCastFeedback:Show()
-        --     elseif msg == "lock" then
-        --         NugCastFeedback:EnableMouse(false)
-        --     else
-        --         DEFAULT_CHAT_FRAME:AddMessage([[Usage:
-        --         /ncf unlock
-        --         /ncf lock
-        --         ]], 0.6, 1, 0.6)
-        --     end
-        -- end
     end
 end
 
 
-local function UNIT_SPELLCAST_SUCCEEDED_HANDLER(self, event, unit, lineID, spellID)
+function NugCastFeedback:UNIT_SPELLCAST_SUCCEEDED(event, unit, lineID, spellID)
     if IsPlayerSpell(spellID) then
         if spellID == 75 then return end -- Autoshot
         local index = self.iconpool.current
-        local icon = self.iconpool[index]
+        local frame = self.iconpool[index]
 
         local texture = select(3,GetSpellInfo(spellID))
-        icon.texture:SetTexture(texture)
-        icon:Show()
-        icon.ag:Play()
+        frame.icon:SetTexture(texture)
+        frame:Show()
+        frame.ag:Play()
 
         self.iconpool.current = (index == #self.iconpool) and 1 or index+1
     end
 end
 
 function NugCastFeedback:SpawnIconLine(unit)
-    local line = self:CreateLastSpellIconLine()
-    line:SetScript("OnEvent", UNIT_SPELLCAST_SUCCEEDED_HANDLER)
-    line:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", unit)
-    return line
+    self:CreateLastSpellIconLine()
+    self:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", unit)
+    return self
 end
 
-function NugCastFeedback.CreateLastSpellIconLine(parent)
+function NugCastFeedback:CreateMirrorButton()
+    local mirror = CreateFrame("Button", "NugCastFeedbackMirror", self, "ActionButtonTemplate")
+    mirror:SetHeight(48)
+    mirror:SetWidth(48)
 
-    local self = CreateFrame("Frame", UIParent)
+    if MasqueGroup then
+        MasqueGroup:AddButton(mirror)
+    end
+    mirror:Show()
+    -- mirror:SetScale(1.3)
+    mirror._elapsed = 0
+
+    mirror:SetScript("OnUpdate", function(self, elapsed)
+        self._elapsed = self._elapsed + elapsed
+
+        local timePassed = self._elapsed
+        if timePassed >= 1.5 then
+            local alpha = 2 - timePassed
+            self:SetAlpha(alpha)
+            if alpha == 0 then self:Hide() end
+        end
+    end)
+
+    local ActionButtonDown = function(actionSlot)
+        local tex = GetActionTexture(actionSlot)
+        mirror.icon:SetTexture(tex)
+        mirror:Show()
+        mirror:SetAlpha(1)
+        mirror._elapsed = 0
+        if mirror:GetButtonState() == "NORMAL" then
+			mirror:SetButtonState("PUSHED");
+		end
+    end
+
+    local ActionButtonUp = function(actionSlot)
+        if mirror:GetButtonState() == "PUSHED" then
+			mirror:SetButtonState("NORMAL");
+		end
+    end
+
+    hooksecurefunc("ActionButtonDown", ActionButtonDown)
+    hooksecurefunc("ActionButtonUp", ActionButtonUp)
+    hooksecurefunc("MultiActionButtonDown", function(bar,id)
+        local button = _G[bar.."Button"..id];
+        return ActionButtonDown(button.action)
+    end)
+    hooksecurefunc("MultiActionButtonUp", ActionButtonUp)
+
+    mirror:SetPoint("CENTER", self, "CENTER")
+
+    return mirror
+end
+
+function NugCastFeedback:CreateLastSpellIconLine()
+    -- local parent = self
+
+    -- parent:SetHeight(40)
+    -- parent:SetWidth(40)
+
+    -- local self = CreateFrame("Frame", nil, parent)
 
     self.iconpool = {}
     self:SetHeight(40)
@@ -75,26 +119,31 @@ function NugCastFeedback.CreateLastSpellIconLine(parent)
     -- t:SetTexture("Interface\\Icons\\Spell_Shadow_SacrificialShield") 
 
     for i=1,3 do
-        local f = CreateFrame("Button", nil, self)
+        local f = CreateFrame("Button", "NugCastFeedbackFrame"..i, self, "ActionButtonTemplate")
 
-        f:SetAllPoints(self)
-        -- f:SetHeight(40)-
-        -- f:SetWidth(40)-
-        local t = f:CreateTexture(nil, "ARTWORK")
-        t:SetTexCoord(.1, .9, .1, .9)
-        t:SetAllPoints(f)
-        f.texture = t
+        f:SetHeight(40)
+        f:SetWidth(40)
+        f:SetPoint("RIGHT", self.mirror, "LEFT",0,0)
+        -- f:SetAllPoints(self)
+        -- local t = f:CreateTexture(nil, "ARTWORK")
+        -- t:SetTexCoord(.1, .9, .1, .9)
+        -- t:SetAllPoints(f)
+        -- f.icon = t
+        local t = f.icon
         f:SetAlpha(0)
 
-        local backdrop = {
-            bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
-            tile = true, tileSize = 0,
-            insets = {left = -2, right = -2, top = -2, bottom = -2},
-        }
-        f:SetBackdrop(backdrop)
-        f:SetBackdropColor(0, 0, 0, 0.7)
+        -- local backdrop = {
+        --     bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+        --     tile = true, tileSize = 0,
+        --     insets = {left = -2, right = -2, top = -2, bottom = -2},
+        -- }
+        -- f:SetBackdrop(backdrop)
+        -- f:SetBackdropColor(0, 0, 0, 0.7)
 
-        -- MasqueIcon:AddButton(f, {Icon = t})
+        -- MasqueGroup:AddButton(f, {Icon = t})
+        if MasqueGroup then
+            MasqueGroup:AddButton(f)
+        end
 
         t:SetTexture("Interface\\Icons\\Spell_Shadow_SacrificialShield")
 
