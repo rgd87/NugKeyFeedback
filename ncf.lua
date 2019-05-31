@@ -71,8 +71,8 @@ function NugCastFeedback:CreateMirrorButton()
         end
     end)
 
-    local ActionButtonDown = function(actionSlot)
-        local tex = GetActionTexture(actionSlot)
+    local ActionButtonDown = function(action)
+        local tex = GetActionTexture(action)
         mirror.icon:SetTexture(tex)
         mirror:Show()
         mirror:SetAlpha(1)
@@ -82,13 +82,17 @@ function NugCastFeedback:CreateMirrorButton()
 		end
     end
 
-    local ActionButtonUp = function(actionSlot)
+    local ActionButtonUp = function(action)
         if mirror:GetButtonState() == "PUSHED" then
 			mirror:SetButtonState("NORMAL");
 		end
     end
 
-    hooksecurefunc("ActionButtonDown", ActionButtonDown)
+    local GetActionButtonForID = _G.GetActionButtonForID
+    hooksecurefunc("ActionButtonDown", function(id)
+        local button = GetActionButtonForID(id)
+        return ActionButtonDown(button.action)
+    end)
     hooksecurefunc("ActionButtonUp", ActionButtonUp)
     hooksecurefunc("MultiActionButtonDown", function(bar,id)
         local button = _G[bar.."Button"..id];
