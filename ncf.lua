@@ -73,6 +73,7 @@ function NugCastFeedback:CreateMirrorButton()
 
     local ActionButtonDown = function(action)
         local tex = GetActionTexture(action)
+        if not tex then return end
         mirror.icon:SetTexture(tex)
         mirror:Show()
         mirror:SetAlpha(1)
@@ -101,6 +102,8 @@ function NugCastFeedback:CreateMirrorButton()
     hooksecurefunc("MultiActionButtonUp", ActionButtonUp)
 
     mirror:SetPoint("CENTER", self, "CENTER")
+
+    mirror:Hide()
 
     return mirror
 end
