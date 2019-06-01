@@ -6,23 +6,65 @@ NugCastFeedback:SetScript("OnEvent", function(self, event, ...)
     return self[event](self, event, ...)
 end)
 
+local NCFDB
+
 local Masque = LibStub("Masque", true)
 local MasqueGroup
 NugCastFeedback:RegisterEvent("ADDON_LOADED")
 
+local defaults = {
+    point = "CENTER",
+    x = 0, y = 0,
+    
+}
+
+local function SetupDefaults(t, defaults)
+    for k,v in pairs(defaults) do
+        if type(v) == "table" then
+            if t[k] == nil then
+                t[k] = CopyTable(v)
+            else
+                SetupDefaults(t[k], v)
+            end
+        else
+            if t[k] == nil then t[k] = v end
+        end
+    end
+end
+local function RemoveDefaults(t, defaults)
+    for k, v in pairs(defaults) do
+        if type(t[k]) == 'table' and type(v) == 'table' then
+            RemoveDefaults(t[k], v)
+            if next(t[k]) == nil then
+                t[k] = nil
+            end
+        elseif t[k] == v then
+            t[k] = nil
+        end
+    end
+    return t
+end
+
 function NugCastFeedback.ADDON_LOADED(self,event,arg1)
     if arg1 == addonName then
         
-        -- NugCastFeedbackDB = NugCastFeedbackDB or {}
-        -- SetupDefaults(NugCastFeedbackDB, defaults)
+        _G.NugCastFeedbackDB = _G.NugCastFeedbackDB or {}
+        NCFDB = _G.NugCastFeedbackDB
+        SetupDefaults(NCFDB, defaults)
 
         if Masque then
             MasqueGroup = Masque:Group(addonName, "FeedbackButtons")
         end
         self.mirror = self:CreateMirrorButton()
-        local player = self:SpawnIconLine("player")
-        player:SetPoint("TOPLEFT", UIParent, "CENTER", 90, 75)
-        player:SetSize(30, 30)
+        self:SpawnIconLine("player")
+        self:SetSize(30, 30)
+
+        self.anchor = self:CreateAnchor()
+        self:SetPoint("BOTTOMLEFT", self.anchor, "TOPRIGHT", 0, 0)
+        
+        SLASH_NUGCASTFEEDBACK1= "/nugcastfeedback"
+        SLASH_NUGCASTFEEDBACK2= "/ncf"
+        SlashCmdList["NUGCASTFEEDBACK"] = self.SlashCmd
     end
 end
 
@@ -203,3 +245,66 @@ function NugCastFeedback:CreateLastSpellIconLine()
     return self
 end
 
+
+function NugCastFeedback:CreateAnchor()
+    local f = CreateFrame("Frame","NugThreatAnchor",UIParent)
+    f:SetHeight(20)
+    f:SetWidth(20)
+    f:SetPoint("CENTER","UIParent","CENTER",NCFDB.x, NCFDB.y)
+
+    f:RegisterForDrag("LeftButton")
+    f:EnableMouse(true)
+    f:SetMovable(true)
+    f:Hide()
+
+    local t = f:CreateTexture(f:GetName().."Icon1","BACKGROUND")
+    t:SetTexture("Interface\\Buttons\\UI-RadioButton")
+    t:SetTexCoord(0,0.25,0,1)
+    t:SetAllPoints(f)
+
+    t = f:CreateTexture(f:GetName().."Icon","BACKGROUND")
+    t:SetTexture("Interface\\Buttons\\UI-RadioButton")
+    t:SetTexCoord(0.25,0.49,0,1)
+    t:SetVertexColor(1, 0, 0)
+    t:SetAllPoints(f)
+
+    f:SetScript("OnDragStart",function(self) self:StartMoving() end)
+    f:SetScript("OnDragStop",function(self)
+        self:StopMovingOrSizing();
+        _,_, NCFDB.point, NCFDB.x, NCFDB.y = self:GetPoint(1)
+    end)
+    return f
+end
+
+
+local helpMessage = {
+    "|cff00ff00/ncf lock|r",
+    "|cff00ff00/ncf unlock|r",
+    "|cff00ff00/ncf direction|r",
+}
+
+
+NugCastFeedback.Commands = {
+    ["unlock"] = function(v)
+        NugCastFeedback.anchor:Show()
+    end,
+    ["lock"] = function(v)
+        NugCastFeedback.anchor:Hide()
+    end,
+    ["direction"] = function(v)
+        NCFDB.direction = v
+    end,
+}
+
+function NugCastFeedback.SlashCmd(msg)
+    local k,v = string.match(msg, "([%w%+%-%=]+) ?(.*)")
+    if not k or k == "help" then
+        print("Usage:")
+        for k,v in ipairs(helpMessage) do
+            print(" - ",v)
+        end
+    end
+    if NugCastFeedback.Commands[k] then
+        NugCastFeedback.Commands[k](v)
+    end
+end
