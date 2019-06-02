@@ -1,12 +1,14 @@
 local addonName, ns = ...
 
 
-local NugCastFeedback = CreateFrame("Frame", nil, UIParent)
+local NugCastFeedback = CreateFrame("Frame", "NugCastFeedback", UIParent)
 NugCastFeedback:SetScript("OnEvent", function(self, event, ...)
     return self[event](self, event, ...)
 end)
 
 local NCFDB
+
+local ICON_POOL_SIZE = 3
 
 local Masque = LibStub("Masque", true)
 local MasqueGroup
@@ -167,7 +169,7 @@ function NugCastFeedback:CreateLastSpellIconLine()
     -- t:SetTexCoord(.1, .9, .1, .9)
     -- t:SetTexture("Interface\\Icons\\Spell_Shadow_SacrificialShield") 
 
-    for i=1,3 do
+    for i=1,ICON_POOL_SIZE do
         local f = CreateFrame("Button", "NugCastFeedbackFrame"..i, self, "ActionButtonTemplate")
 
         f:SetHeight(40)
@@ -201,6 +203,7 @@ function NugCastFeedback:CreateLastSpellIconLine()
 
         local scaleOrigin = "RIGHT"
         local translateX = -100
+        local translateY = 0
 
         
         local s1 = ag:CreateAnimation("Scale")
@@ -222,19 +225,23 @@ function NugCastFeedback:CreateLastSpellIconLine()
         a1:SetDuration(0.1)
         a1:SetOrder(2)
 
-        local a2 = ag:CreateAnimation("Translation")
-        a2:SetOffset(translateX,0)
-        a2:SetDuration(1.2)
-        a2:SetSmoothing("IN")
+        local t1 = ag:CreateAnimation("Translation")
+        t1:SetOffset(translateX,translateY)
+        t1:SetDuration(1.2)
+        t1:SetSmoothing("IN")
+        t1:SetOrder(2)
+
+        local a2 = ag:CreateAnimation("Alpha")
+        a2:SetFromAlpha(1)
+        a2:SetToAlpha(0)
+        a2:SetSmoothing("OUT")
+        a2:SetDuration(0.5)
+        a2:SetStartDelay(0.6)
         a2:SetOrder(2)
 
-        local a3 = ag:CreateAnimation("Alpha")
-        a3:SetFromAlpha(1)
-        a3:SetToAlpha(0)
-        a3:SetSmoothing("OUT")
-        a3:SetDuration(0.5)
-        a3:SetStartDelay(0.6)
-        a3:SetOrder(2)
+        ag.s1 = s1
+        ag.s2 = s2
+        ag.t1 = t1
 
         ag:SetScript("OnFinished", function(self)
             self:GetParent():Hide()
@@ -242,10 +249,44 @@ function NugCastFeedback:CreateLastSpellIconLine()
 
         table.insert(self.iconpool, f)
     end
+    self:UpdateSettings()
 
     self.iconpool.current = 1
     
     return self
+end
+
+function NugCastFeedback:UpdateSettings()
+    local scaleOrigin, revOrigin, translateX, translateY
+    if NCFDB.direction == "RIGHT" then
+        scaleOrigin = "LEFT"
+        revOrigin = "RIGHT"
+        translateX = 100
+        translateY = 0
+    elseif NCFDB.direction == "TOP" then
+        scaleOrigin = "BOTTOM"
+        revOrigin = "TOP"
+        translateX = 0
+        translateY = 100
+    elseif NCFDB.direction == "BOTTOM" then
+        scaleOrigin = "TOP"
+        revOrigin = "BOTTOM"
+        translateX = 0
+        translateY = -100
+    else
+        scaleOrigin = "RIGHT"
+        revOrigin = "LEFT"
+        translateX = -100
+        translateY = 0
+    end
+    for i, frame in ipairs(self.iconpool) do
+        local ag = frame.ag
+        ag.s1:SetOrigin(scaleOrigin, 0,0)
+        ag.s2:SetOrigin(scaleOrigin, 0,0)
+        ag.t1:SetOffset(translateX, translateY)
+        frame:ClearAllPoints()
+        frame:SetPoint(scaleOrigin, self.mirror, revOrigin, 0,0)
+    end
 end
 
 
@@ -283,7 +324,7 @@ end
 local helpMessage = {
     "|cff00ff00/ncf lock|r",
     "|cff00ff00/ncf unlock|r",
-    "|cff00ff00/ncf direction|r",
+    "|cff00ff00/ncf direction|r <TOP|LEFT||RIGHT|BOTTOM>",
 }
 
 
@@ -295,7 +336,8 @@ NugCastFeedback.Commands = {
         NugCastFeedback.anchor:Hide()
     end,
     ["direction"] = function(v)
-        NCFDB.direction = v
+        NCFDB.direction = string.upper(v)
+        NugCastFeedback:UpdateSettings()
     end,
 }
 
