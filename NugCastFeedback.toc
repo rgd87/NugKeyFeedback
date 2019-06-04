@@ -1,5 +1,5 @@
 ## Interface: 80000
 ## Title: NugCastFeedback
-## SavedVariablesPerCharacter: NugCastFeedbackDB
+## SavedVariables: NugCastFeedbackDB
 ## Author: d87
 ncf.lua
