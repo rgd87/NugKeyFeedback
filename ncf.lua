@@ -115,6 +115,8 @@ function NugCastFeedback:CreateMirrorButton()
         end
     end)
 
+    mirror:EnableMouse(false)
+
     local ActionButtonDown = function(action)
         local tex = GetActionTexture(action)
         if not tex then return end
@@ -172,6 +174,7 @@ function NugCastFeedback:CreateLastSpellIconLine()
     for i=1,ICON_POOL_SIZE do
         local f = CreateFrame("Button", "NugCastFeedbackFrame"..i, self, "ActionButtonTemplate")
 
+        f:EnableMouse(false)
         f:SetHeight(40)
         f:SetWidth(40)
         f:SetPoint("RIGHT", self.mirror, "LEFT",0,0)
