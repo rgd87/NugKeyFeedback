@@ -1,20 +1,21 @@
 local addonName, ns = ...
 
-local NugCastFeedback = CreateFrame("Frame", "NugCastFeedback", UIParent)
-NugCastFeedback:SetScript("OnEvent", function(self, event, ...)
+local NugKeyFeedback = CreateFrame("Frame", "NugKeyFeedback", UIParent)
+NugKeyFeedback:SetScript("OnEvent", function(self, event, ...)
     return self[event](self, event, ...)
 end)
 
-local NCFDB
+local NKFDB
 
 local Masque = LibStub("Masque", true)
 local MasqueGroup
-NugCastFeedback:RegisterEvent("PLAYER_LOGIN")
-NugCastFeedback:RegisterEvent("PLAYER_LOGOUT")
+NugKeyFeedback:RegisterEvent("PLAYER_LOGIN")
+NugKeyFeedback:RegisterEvent("PLAYER_LOGOUT")
 
 local defaults = {
     point = "CENTER",
     x = 0, y = 0,
+    direction = "LEFT",
 }
 
 local function SetupDefaults(t, defaults)
@@ -44,11 +45,11 @@ local function RemoveDefaults(t, defaults)
     return t
 end
 
-function NugCastFeedback:PLAYER_LOGIN(event)
+function NugKeyFeedback:PLAYER_LOGIN(event)
 
-    _G.NugCastFeedbackDB = _G.NugCastFeedbackDB or {}
-    NCFDB = _G.NugCastFeedbackDB
-    SetupDefaults(NCFDB, defaults)
+    _G.NugKeyFeedbackDB = _G.NugKeyFeedbackDB or {}
+    NKFDB = _G.NugKeyFeedbackDB
+    SetupDefaults(NKFDB, defaults)
 
     if Masque then
         MasqueGroup = Masque:Group(addonName, "FeedbackButtons")
@@ -66,16 +67,16 @@ function NugCastFeedback:PLAYER_LOGIN(event)
     self.anchor = self:CreateAnchor()
     self:SetPoint("BOTTOMLEFT", self.anchor, "TOPRIGHT", 0, 0)
 
-    SLASH_NUGCASTFEEDBACK1= "/nugcastfeedback"
-    SLASH_NUGCASTFEEDBACK2= "/ncf"
-    SlashCmdList["NUGCASTFEEDBACK"] = self.SlashCmd
+    SLASH_NUGKEYFEEDBACK1= "/nugkeyfeedback"
+    SLASH_NUGKEYFEEDBACK2= "/nkf"
+    SlashCmdList["NUGKEYFEEDBACK"] = self.SlashCmd
 end
-function NugCastFeedback:PLAYER_LOGOUT(event)
-    RemoveDefaults(NCFDB, defaults)
+function NugKeyFeedback:PLAYER_LOGOUT(event)
+    RemoveDefaults(NKFDB, defaults)
 end
 
 
-function NugCastFeedback:UNIT_SPELLCAST_SUCCEEDED(event, unit, lineID, spellID)
+function NugKeyFeedback:UNIT_SPELLCAST_SUCCEEDED(event, unit, lineID, spellID)
     if IsPlayerSpell(spellID) then
         if spellID == 75 then return end -- Autoshot
         local frame, isNew = self.iconPool:Acquire()
@@ -88,14 +89,14 @@ function NugCastFeedback:UNIT_SPELLCAST_SUCCEEDED(event, unit, lineID, spellID)
     end
 end
 
--- function NugCastFeedback:SpawnIconLine(unit)
+-- function NugKeyFeedback:SpawnIconLine(unit)
 --     self:CreateLastSpellIconLine()
 --     self:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", unit)
 --     return self
 -- end
 
-function NugCastFeedback:CreateMirrorButton()
-    local mirror = CreateFrame("Button", "NugCastFeedbackMirror", self, "ActionButtonTemplate")
+function NugKeyFeedback:CreateMirrorButton()
+    local mirror = CreateFrame("Button", "NugKeyFeedbackMirror", self, "ActionButtonTemplate")
     mirror:SetHeight(48)
     mirror:SetWidth(48)
 
@@ -162,7 +163,7 @@ local PoolIconCreationFunc = function(pool)
     pool.idCounter = pool.idCounter + 1
     local f
     -- if ns.MasqueGroup then
-        f = CreateFrame("Button", "NugCF"..id, hdr, "ActionButtonTemplate")
+        f = CreateFrame("Button", "NugKeyFeedbackPoolIcon"..id, hdr, "ActionButtonTemplate")
     -- else
         -- f = CreateFrame("Frame", nil, hdr)
     -- end
@@ -236,7 +237,7 @@ local PoolIconCreationFunc = function(pool)
 end
 
 local function PoolIconResetterFunc(pool, f)
-    local db = NCFDB
+    local db = NKFDB
 
     f:SetHeight(40)
     f:SetWidth(40)
@@ -283,7 +284,7 @@ local function PoolIconResetterFunc(pool, f)
     f:SetPoint(scaleOrigin, parent, revOrigin, 0,0)
 end
 
-function NugCastFeedback:CreateLastSpellIconLine(parent)
+function NugKeyFeedback:CreateLastSpellIconLine(parent)
     local template = nil
     local resetterFunc = PoolIconResetterFunc
     local iconPool = CreateFramePool("Frame", parent, template, resetterFunc)
@@ -294,13 +295,13 @@ function NugCastFeedback:CreateLastSpellIconLine(parent)
 end
 
 --[[
-function NugCastFeedback:CreateFlashTexture(parent)
+function NugKeyFeedback:CreateFlashTexture(parent)
     local flash = parent:CreateTexture(nil, "ARTWORK")
     flash:SetAtlas("collections-newglow")
     flash:SetVertexColor(1,1,0)
     -- flash:SetRotation(math.rad(90))
     flash:SetSize(85, 25)
-    flash:SetPoint("CENTER", self.mirror, NCFDB.direction,0,0)
+    flash:SetPoint("CENTER", self.mirror, NKFDB.direction,0,0)
     flash:SetAlpha(0)
 
     local ag = flash:CreateAnimationGroup()
@@ -325,11 +326,11 @@ function NugCastFeedback:CreateFlashTexture(parent)
 end
 ]]
 
-function NugCastFeedback:CreateAnchor()
+function NugKeyFeedback:CreateAnchor()
     local f = CreateFrame("Frame","NugThreatAnchor",UIParent)
     f:SetHeight(20)
     f:SetWidth(20)
-    f:SetPoint("CENTER","UIParent","CENTER",NCFDB.x, NCFDB.y)
+    f:SetPoint("CENTER","UIParent","CENTER",NKFDB.x, NKFDB.y)
 
     f:RegisterForDrag("LeftButton")
     f:EnableMouse(true)
@@ -350,29 +351,29 @@ function NugCastFeedback:CreateAnchor()
     f:SetScript("OnDragStart",function(self) self:StartMoving() end)
     f:SetScript("OnDragStop",function(self)
         self:StopMovingOrSizing();
-        _,_, NCFDB.point, NCFDB.x, NCFDB.y = self:GetPoint(1)
+        NKFDB.point, NKFDB.x, NKFDB.y = select(3, self:GetPoint(1)) -- skip first 2 values
     end)
     return f
 end
 
 
 local helpMessage = {
-    "|cff00ff00/ncf lock|r",
-    "|cff00ff00/ncf unlock|r",
-    "|cff00ff00/ncf direction|r <TOP|LEFT||RIGHT|BOTTOM>",
+    "|cff00ff00/nkf lock|r",
+    "|cff00ff00/nkf unlock|r",
+    "|cff00ff00/nkf direction|r <TOP|LEFT||RIGHT|BOTTOM>",
 }
 
 
-NugCastFeedback.Commands = {
+NugKeyFeedback.Commands = {
     ["unlock"] = function(v)
-        NugCastFeedback.anchor:Show()
+        NugKeyFeedback.anchor:Show()
     end,
     ["lock"] = function(v)
-        NugCastFeedback.anchor:Hide()
+        NugKeyFeedback.anchor:Hide()
     end,
     ["direction"] = function(v)
-        NCFDB.direction = string.upper(v)
-        local pool = NugCastFeedback.iconPool
+        NKFDB.direction = string.upper(v)
+        local pool = NugKeyFeedback.iconPool
         pool:ReleaseAll()
         for i,f in pool:EnumerateInactive() do
             PoolIconResetterFunc(pool, f)
@@ -380,7 +381,7 @@ NugCastFeedback.Commands = {
     end,
 }
 
-function NugCastFeedback.SlashCmd(msg)
+function NugKeyFeedback.SlashCmd(msg)
     local k,v = string.match(msg, "([%w%+%-%=]+) ?(.*)")
     if not k or k == "help" then
         print("Usage:")
@@ -388,7 +389,7 @@ function NugCastFeedback.SlashCmd(msg)
             print(" - ",v)
         end
     end
-    if NugCastFeedback.Commands[k] then
-        NugCastFeedback.Commands[k](v)
+    if NugKeyFeedback.Commands[k] then
+        NugKeyFeedback.Commands[k](v)
     end
 end
