@@ -1,6 +1,5 @@
 local addonName, ns = ...
 
-
 local NugCastFeedback = CreateFrame("Frame", "NugCastFeedback", UIParent)
 NugCastFeedback:SetScript("OnEvent", function(self, event, ...)
     return self[event](self, event, ...)
@@ -8,16 +7,14 @@ end)
 
 local NCFDB
 
-local ICON_POOL_SIZE = 3
-
 local Masque = LibStub("Masque", true)
 local MasqueGroup
-NugCastFeedback:RegisterEvent("ADDON_LOADED")
+NugCastFeedback:RegisterEvent("PLAYER_LOGIN")
+NugCastFeedback:RegisterEvent("PLAYER_LOGOUT")
 
 local defaults = {
     point = "CENTER",
     x = 0, y = 0,
-    
 }
 
 local function SetupDefaults(t, defaults)
@@ -47,50 +44,55 @@ local function RemoveDefaults(t, defaults)
     return t
 end
 
-function NugCastFeedback.ADDON_LOADED(self,event,arg1)
-    if arg1 == addonName then
-        
-        _G.NugCastFeedbackDB = _G.NugCastFeedbackDB or {}
-        NCFDB = _G.NugCastFeedbackDB
-        SetupDefaults(NCFDB, defaults)
+function NugCastFeedback:PLAYER_LOGIN(event)
 
-        if Masque then
-            MasqueGroup = Masque:Group(addonName, "FeedbackButtons")
-        end
-        self.mirror = self:CreateMirrorButton()
-        self:SpawnIconLine("player")
-        self:SetSize(30, 30)
+    _G.NugCastFeedbackDB = _G.NugCastFeedbackDB or {}
+    NCFDB = _G.NugCastFeedbackDB
+    SetupDefaults(NCFDB, defaults)
 
-        self.anchor = self:CreateAnchor()
-        self:SetPoint("BOTTOMLEFT", self.anchor, "TOPRIGHT", 0, 0)
-        
-        SLASH_NUGCASTFEEDBACK1= "/nugcastfeedback"
-        SLASH_NUGCASTFEEDBACK2= "/ncf"
-        SlashCmdList["NUGCASTFEEDBACK"] = self.SlashCmd
+    if Masque then
+        MasqueGroup = Masque:Group(addonName, "FeedbackButtons")
     end
+    self.mirror = self:CreateMirrorButton()
+
+    -- self.flash = self:CreateFlashTexture(self.mirror)
+
+    self.iconPool = self:CreateLastSpellIconLine(self.mirror)
+    self:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player")
+
+    -- self:SpawnIconLine("player")
+    self:SetSize(30, 30)
+
+    self.anchor = self:CreateAnchor()
+    self:SetPoint("BOTTOMLEFT", self.anchor, "TOPRIGHT", 0, 0)
+
+    SLASH_NUGCASTFEEDBACK1= "/nugcastfeedback"
+    SLASH_NUGCASTFEEDBACK2= "/ncf"
+    SlashCmdList["NUGCASTFEEDBACK"] = self.SlashCmd
+end
+function NugCastFeedback:PLAYER_LOGOUT(event)
+    RemoveDefaults(NCFDB, defaults)
 end
 
 
 function NugCastFeedback:UNIT_SPELLCAST_SUCCEEDED(event, unit, lineID, spellID)
     if IsPlayerSpell(spellID) then
         if spellID == 75 then return end -- Autoshot
-        local index = self.iconpool.current
-        local frame = self.iconpool[index]
+        local frame, isNew = self.iconPool:Acquire()
 
         local texture = select(3,GetSpellInfo(spellID))
         frame.icon:SetTexture(texture)
         frame:Show()
         frame.ag:Play()
-
-        self.iconpool.current = (index == #self.iconpool) and 1 or index+1
+        -- self.flash.ag:Play()
     end
 end
 
-function NugCastFeedback:SpawnIconLine(unit)
-    self:CreateLastSpellIconLine()
-    self:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", unit)
-    return self
-end
+-- function NugCastFeedback:SpawnIconLine(unit)
+--     self:CreateLastSpellIconLine()
+--     self:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", unit)
+--     return self
+-- end
 
 function NugCastFeedback:CreateMirrorButton()
     local mirror = CreateFrame("Button", "NugCastFeedbackMirror", self, "ActionButtonTemplate")
@@ -154,144 +156,174 @@ function NugCastFeedback:CreateMirrorButton()
     return mirror
 end
 
-function NugCastFeedback:CreateLastSpellIconLine()
-    -- local parent = self
+local PoolIconCreationFunc = function(pool)
+    local hdr = pool.parent
+    local id = pool.idCounter
+    pool.idCounter = pool.idCounter + 1
+    local f
+    -- if ns.MasqueGroup then
+        f = CreateFrame("Button", "NugCF"..id, hdr, "ActionButtonTemplate")
+    -- else
+        -- f = CreateFrame("Frame", nil, hdr)
+    -- end
 
-    -- parent:SetHeight(40)
-    -- parent:SetWidth(40)
+    f:EnableMouse(false)
+    f:SetHeight(40)
+    f:SetWidth(40)
+    f:SetPoint("BOTTOM", hdr, "BOTTOM",0, -0)
 
-    -- local self = CreateFrame("Frame", nil, parent)
+    local t = f.icon
+    f:SetAlpha(0)
 
-    self.iconpool = {}
-    self:SetHeight(40)
-    self:SetWidth(40)
-
-    -- local t = self:CreateTexture(nil, "ARTWORK")
-    -- t:SetAllPoints(self)
-    -- t:SetTexCoord(.1, .9, .1, .9)
-    -- t:SetTexture("Interface\\Icons\\Spell_Shadow_SacrificialShield") 
-
-    for i=1,ICON_POOL_SIZE do
-        local f = CreateFrame("Button", "NugCastFeedbackFrame"..i, self, "ActionButtonTemplate")
-
-        f:EnableMouse(false)
-        f:SetHeight(40)
-        f:SetWidth(40)
-        f:SetPoint("RIGHT", self.mirror, "LEFT",0,0)
-        -- f:SetAllPoints(self)
-        -- local t = f:CreateTexture(nil, "ARTWORK")
-        -- t:SetTexCoord(.1, .9, .1, .9)
-        -- t:SetAllPoints(f)
-        -- f.icon = t
-        local t = f.icon
-        f:SetAlpha(0)
-
-        -- local backdrop = {
-        --     bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
-        --     tile = true, tileSize = 0,
-        --     insets = {left = -2, right = -2, top = -2, bottom = -2},
-        -- }
-        -- f:SetBackdrop(backdrop)
-        -- f:SetBackdropColor(0, 0, 0, 0.7)
-
-        -- MasqueGroup:AddButton(f, {Icon = t})
-        if MasqueGroup then
-            MasqueGroup:AddButton(f)
-        end
-
-        t:SetTexture("Interface\\Icons\\Spell_Shadow_SacrificialShield")
-
-        local ag = f:CreateAnimationGroup()
-        f.ag = ag
-
-        local scaleOrigin = "RIGHT"
-        local translateX = -100
-        local translateY = 0
-
-        
-        local s1 = ag:CreateAnimation("Scale")
-        s1:SetScale(0.01,1)
-        s1:SetDuration(0)
-        s1:SetOrigin(scaleOrigin,0,0)
-        s1:SetOrder(1)
-
-        local s2 = ag:CreateAnimation("Scale")
-        s2:SetScale(100,1)
-        s2:SetDuration(0.5)
-        s2:SetOrigin(scaleOrigin,0,0)
-        s2:SetSmoothing("OUT")
-        s2:SetOrder(2)
-
-        local a1 = ag:CreateAnimation("Alpha")
-        a1:SetFromAlpha(0)
-        a1:SetToAlpha(1)
-        a1:SetDuration(0.1)
-        a1:SetOrder(2)
-
-        local t1 = ag:CreateAnimation("Translation")
-        t1:SetOffset(translateX,translateY)
-        t1:SetDuration(1.2)
-        t1:SetSmoothing("IN")
-        t1:SetOrder(2)
-
-        local a2 = ag:CreateAnimation("Alpha")
-        a2:SetFromAlpha(1)
-        a2:SetToAlpha(0)
-        a2:SetSmoothing("OUT")
-        a2:SetDuration(0.5)
-        a2:SetStartDelay(0.6)
-        a2:SetOrder(2)
-
-        ag.s1 = s1
-        ag.s2 = s2
-        ag.t1 = t1
-
-        ag:SetScript("OnFinished", function(self)
-            self:GetParent():Hide()
-        end)
-
-        table.insert(self.iconpool, f)
+    if MasqueGroup then
+        MasqueGroup:AddButton(f)
     end
-    self:UpdateSettings()
 
-    self.iconpool.current = 1
-    
-    return self
+    t:SetTexture("Interface\\Icons\\Spell_Shadow_SacrificialShield")
+
+    local ag = f:CreateAnimationGroup()
+    f.ag = ag
+
+    local scaleOrigin = "RIGHT"
+    local translateX = -100
+    local translateY = 0
+
+
+    local s1 = ag:CreateAnimation("Scale")
+    s1:SetScale(0.01,1)
+    s1:SetDuration(0)
+    s1:SetOrigin(scaleOrigin,0,0)
+    s1:SetOrder(1)
+
+    local s2 = ag:CreateAnimation("Scale")
+    s2:SetScale(100,1)
+    s2:SetDuration(0.5)
+    s2:SetOrigin(scaleOrigin,0,0)
+    s2:SetSmoothing("OUT")
+    s2:SetOrder(2)
+
+    local a1 = ag:CreateAnimation("Alpha")
+    a1:SetFromAlpha(0)
+    a1:SetToAlpha(1)
+    a1:SetDuration(0.1)
+    a1:SetOrder(2)
+
+    local t1 = ag:CreateAnimation("Translation")
+    t1:SetOffset(translateX,translateY)
+    t1:SetDuration(1.2)
+    t1:SetSmoothing("IN")
+    t1:SetOrder(2)
+
+    local a2 = ag:CreateAnimation("Alpha")
+    a2:SetFromAlpha(1)
+    a2:SetToAlpha(0)
+    a2:SetSmoothing("OUT")
+    a2:SetDuration(0.5)
+    a2:SetStartDelay(0.6)
+    a2:SetOrder(2)
+
+    ag.s1 = s1
+    ag.s2 = s2
+    ag.t1 = t1
+
+    ag:SetScript("OnFinished", function(self)
+        local icon = self:GetParent()
+        icon:Hide()
+        pool:Release(icon)
+    end)
+
+    return f
 end
 
-function NugCastFeedback:UpdateSettings()
+local function PoolIconResetterFunc(pool, f)
+    local db = NCFDB
+
+    f:SetHeight(40)
+    f:SetWidth(40)
+
+    f.ag:Stop()
+
     local scaleOrigin, revOrigin, translateX, translateY
-    if NCFDB.direction == "RIGHT" then
+    -- local sx1, sx2, sy1, sy2
+    if db.direction == "RIGHT" then
         scaleOrigin = "LEFT"
         revOrigin = "RIGHT"
+        -- sx1, sx2, sy1, sy2 = 0.01, 100, 1, 1
         translateX = 100
         translateY = 0
-    elseif NCFDB.direction == "TOP" then
+    elseif db.direction == "TOP" then
         scaleOrigin = "BOTTOM"
         revOrigin = "TOP"
+        -- sx1, sx2, sy1, sy2 = 1,1, 0.01, 100
         translateX = 0
         translateY = 100
-    elseif NCFDB.direction == "BOTTOM" then
+    elseif db.direction == "BOTTOM" then
         scaleOrigin = "TOP"
         revOrigin = "BOTTOM"
+        -- sx1, sx2, sy1, sy2 = 1,1, 0.01, 100
         translateX = 0
         translateY = -100
     else
         scaleOrigin = "RIGHT"
         revOrigin = "LEFT"
+        -- sx1, sx2, sy1, sy2 = 0.01, 100, 1, 1
         translateX = -100
         translateY = 0
     end
-    for i, frame in ipairs(self.iconpool) do
-        local ag = frame.ag
-        ag.s1:SetOrigin(scaleOrigin, 0,0)
-        ag.s2:SetOrigin(scaleOrigin, 0,0)
-        ag.t1:SetOffset(translateX, translateY)
-        frame:ClearAllPoints()
-        frame:SetPoint(scaleOrigin, self.mirror, revOrigin, 0,0)
-    end
+    local ag = f.ag
+    -- ag.s1:SetScale(sx1, sy1)
+    ag.s1:SetOrigin(scaleOrigin, 0,0)
+
+    -- ag.s1:SetScale(sx2, sy2)
+    ag.s2:SetOrigin(scaleOrigin, 0,0)
+    ag.t1:SetOffset(translateX, translateY)
+
+    f:ClearAllPoints()
+    local parent = pool.parent
+    f:SetPoint(scaleOrigin, parent, revOrigin, 0,0)
 end
 
+function NugCastFeedback:CreateLastSpellIconLine(parent)
+    local template = nil
+    local resetterFunc = PoolIconResetterFunc
+    local iconPool = CreateFramePool("Frame", parent, template, resetterFunc)
+    iconPool.creationFunc = PoolIconCreationFunc
+    iconPool.idCounter = 1
+
+    return iconPool
+end
+
+--[[
+function NugCastFeedback:CreateFlashTexture(parent)
+    local flash = parent:CreateTexture(nil, "ARTWORK")
+    flash:SetAtlas("collections-newglow")
+    flash:SetVertexColor(1,1,0)
+    -- flash:SetRotation(math.rad(90))
+    flash:SetSize(85, 25)
+    flash:SetPoint("CENTER", self.mirror, NCFDB.direction,0,0)
+    flash:SetAlpha(0)
+
+    local ag = flash:CreateAnimationGroup()
+
+    local a1 = ag:CreateAnimation("Alpha")
+    a1:SetFromAlpha(0)
+    a1:SetToAlpha(1)
+    a1:SetDuration(0.1)
+    a1:SetOrder(1)
+
+    local a2 = ag:CreateAnimation("Alpha")
+    a2:SetFromAlpha(1)
+    a2:SetToAlpha(0)
+    a2:SetSmoothing("OUT")
+    a2:SetDuration(0.5)
+    a2:SetStartDelay(0.6)
+    a2:SetOrder(2)
+
+    flash.ag = ag
+
+    return flash
+end
+]]
 
 function NugCastFeedback:CreateAnchor()
     local f = CreateFrame("Frame","NugThreatAnchor",UIParent)
@@ -340,7 +372,11 @@ NugCastFeedback.Commands = {
     end,
     ["direction"] = function(v)
         NCFDB.direction = string.upper(v)
-        NugCastFeedback:UpdateSettings()
+        local pool = NugCastFeedback.iconPool
+        pool:ReleaseAll()
+        for i,f in pool:EnumerateInactive() do
+            PoolIconResetterFunc(pool, f)
+        end
     end,
 }
 
