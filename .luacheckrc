@@ -89,6 +89,8 @@ globals = {
     "wipe",
 
 
+    "NugKeyFeedback",
+    "NugKeyFeedbackDB",
     -- everything else
     "CreateFrame",
     "UIParent",
@@ -100,4 +102,11 @@ globals = {
     "GetActionTexture",
     "CreateFramePool",
     "UIParent",
+    "GetActionCooldown",
+    "GetActionCharges",
+    "CooldownFrame_Set",
+    "HasAction",
+    "InterfaceOptionsFrame_OpenToCategory",
+    "ReloadUI",
+    "InterfaceOptionsFrame",
 }
