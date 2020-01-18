@@ -25,7 +25,6 @@ function NugKeyFeedback:PLAYER_LOGIN(event)
     if not _G.NugKeyFeedbackDB then
         _G.NugKeyFeedbackDB = {}
         firstTimeUse = true
-        print("first time")
     end
     -- Create a DB using defaults and using a shared default profile
     -- self.db = LibStub("AceDB-3.0"):New("NugKeyFeedbackDB", defaults, true)
