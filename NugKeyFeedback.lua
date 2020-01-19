@@ -18,6 +18,8 @@ local defaults = {
     lineDirection = "LEFT",
 }
 
+local IsInPetBattle = C_PetBattles.IsInBattle
+
 local firstTimeUse = false
 
 function NugKeyFeedback:PLAYER_LOGIN(event)
@@ -77,6 +79,7 @@ end
 function NugKeyFeedback:HookDefaultBindings(mirror)
     local ActionButtonDown = function(action)
         if not HasAction(action) then return end
+        if IsInPetBattle() then return end
 
         if mirror.action ~= action then
             mirror.action = action

@@ -93,6 +93,7 @@ globals = {
     "NugKeyFeedbackDB",
     -- everything else
     "CreateFrame",
+    "C_PetBattles",
     "UIParent",
     "LibStub",
     "CopyTable",
