@@ -27,8 +27,11 @@ function NugKeyFeedback:CreateFeedbackButton()
         local timePassed = self._elapsed
         if timePassed >= 1.5 then
             local alpha = 2 - timePassed
+            if alpha <= 0 then
+                alpha = 0
+                self:Hide()
+            end
             self:SetAlpha(alpha)
-            if alpha == 0 then self:Hide() end
         end
     end)
 
