@@ -1,8 +1,17 @@
+#@retail@
 ## Interface: 80300
+#@end-retail@
+#@non-retail@
+# ## Interface: 11303
+#@end-non-retail@
+
 ## Title: NugKeyFeedback
 ## SavedVariables: NugKeyFeedbackDB
 ## OptionalDeps: Masque
 ## Author: d87
+
+## X-WoWI-ID: 25488
+## X-Curse-Project-ID: 359317
 
 Libs\LibStub\LibStub.lua
 Libs\CallbackHandler-1.0\CallbackHandler-1.0.lua

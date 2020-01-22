@@ -26,6 +26,11 @@ jobs:
         run: curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash;
         if: '!contains( github.ref, ''beta'')'
 
+      # Double Release
+      - name: Create Classic Package
+        run: curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash -s -- -g 1.13.3;
+        if: '!contains( github.ref, ''beta'')'
+
       - name: Create Pre-Release Package
         run: curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash -s -- -p 0 -w 0;
         if: 'contains( github.ref, ''beta'')'
