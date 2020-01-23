@@ -219,7 +219,7 @@ function NugKeyFeedback:CreateAnchor()
     local f = CreateFrame("Frame","NugThreatAnchor",UIParent)
     f:SetHeight(20)
     f:SetWidth(20)
-    f:SetPoint("CENTER","UIParent","CENTER", NugKeyFeedback.db.x, NugKeyFeedback.db.y)
+    f:SetPoint(NugKeyFeedback.db.point,"UIParent",NugKeyFeedback.db.point, NugKeyFeedback.db.x, NugKeyFeedback.db.y)
 
     f:RegisterForDrag("LeftButton")
     f:EnableMouse(true)
