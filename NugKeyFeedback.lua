@@ -18,7 +18,9 @@ local defaults = {
     lineDirection = "LEFT",
 }
 
-local IsInPetBattle = C_PetBattles.IsInBattle
+local isClassic = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
+local dummy = function() end
+local IsInPetBattle = isClassic and dummy or C_PetBattles.IsInBattle
 
 local firstTimeUse = false
 
