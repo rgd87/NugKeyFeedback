@@ -110,6 +110,7 @@ function NugKeyFeedback:CreateGUI()
 
             forceUseActionHook = {
                 name = L"Force UseAction hook",
+                desc = "Force the alternative hook mode. Only enable this if things do not work in combination with your main action bar addon",
                 type = "toggle",
                 width = "full",
                 order = 10,
@@ -119,7 +120,7 @@ function NugKeyFeedback:CreateGUI()
                     return NugKeyFeedback.autoDetectHookMode ~= nil
                 end,
                 get = function(info)
-                    if NugKeyFeedback.autoDetectHookMode ~= nil then return true end
+                    if NugKeyFeedback.autoDetectHookMode ~= nil then return NugKeyFeedback.autoDetectHookMode end
                     return NugKeyFeedback.db.forceUseActionHook
                 end,
                 set = function(info, v)

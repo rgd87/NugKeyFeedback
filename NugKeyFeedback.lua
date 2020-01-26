@@ -41,7 +41,6 @@ function NugKeyFeedback:PLAYER_LOGIN(event)
         IsAddOnLoaded("ElvUI") or
         IsAddOnLoaded("TukUI")
 
-
     if self.db.forceUseActionHook or usingActionBarAddons then
         self.mirror = self:CreateFeedbackButton(true)
         self:HookUseAction()
