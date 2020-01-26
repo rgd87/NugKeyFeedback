@@ -7,7 +7,7 @@
 
 ## Title: NugKeyFeedback
 ## SavedVariables: NugKeyFeedbackDB
-## OptionalDeps: Masque
+## OptionalDeps: Masque, Bartender4, Neuron, ElvUI
 ## Author: d87
 
 ## X-WoWI-ID: 25488

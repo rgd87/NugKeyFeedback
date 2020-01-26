@@ -2,7 +2,7 @@ local addonName, ns = ...
 
 local Masque = LibStub("Masque", true)
 
-function NugKeyFeedback:CreateFeedbackButton()
+function NugKeyFeedback:CreateFeedbackButton(autoKeyup)
     local db = self.db
 
     local mirror = CreateFrame("Button", "NugKeyFeedbackMirror", self, "ActionButtonTemplate")
@@ -21,19 +21,41 @@ function NugKeyFeedback:CreateFeedbackButton()
     mirror:Show()
     mirror._elapsed = 0
 
-    mirror:SetScript("OnUpdate", function(self, elapsed)
-        self._elapsed = self._elapsed + elapsed
+    if autoKeyup then
+        mirror:SetScript("OnUpdate", function(self, elapsed)
+            self._elapsed = self._elapsed + elapsed
 
-        local timePassed = self._elapsed
-        if timePassed >= 1.5 then
-            local alpha = 2 - timePassed
-            if alpha <= 0 then
-                alpha = 0
-                self:Hide()
+            local timePassed = self._elapsed
+
+            if timePassed >= 0.1 and self.pushed then
+                mirror:SetButtonState("NORMAL");
+                self.pushed = false
             end
-            self:SetAlpha(alpha)
-        end
-    end)
+
+            if timePassed >= 1.5 then
+                local alpha = 2 - timePassed
+                if alpha <= 0 then
+                    alpha = 0
+                    self:Hide()
+                end
+                self:SetAlpha(alpha)
+            end
+        end)
+    else
+        mirror:SetScript("OnUpdate", function(self, elapsed)
+            self._elapsed = self._elapsed + elapsed
+
+            local timePassed = self._elapsed
+            if timePassed >= 1.5 then
+                local alpha = 2 - timePassed
+                if alpha <= 0 then
+                    alpha = 0
+                    self:Hide()
+                end
+                self:SetAlpha(alpha)
+            end
+        end)
+    end
 
     mirror:EnableMouse(false)
 

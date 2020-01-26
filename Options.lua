@@ -107,6 +107,33 @@ function NugKeyFeedback:CreateGUI()
                 end,
             },
 
+
+            forceUseActionHook = {
+                name = L"Force UseAction hook",
+                type = "toggle",
+                width = "full",
+                order = 10,
+                confirm = true,
+                confirmText = L"Warning: Requires UI reloading.",
+                disabled = function()
+                    return NugKeyFeedback.autoDetectHookMode ~= nil
+                end,
+                get = function(info)
+                    if NugKeyFeedback.autoDetectHookMode ~= nil then return true end
+                    return NugKeyFeedback.db.forceUseActionHook
+                end,
+                set = function(info, v)
+                    NugKeyFeedback.db.forceUseActionHook = not NugKeyFeedback.db.forceUseActionHook
+                    ReloadUI()
+                end
+            },
+            description1 = {
+                name = "|cffffaa55"..L"It is highly recommended that you enable 'Cast on Key Down' if using Bartender4/Neuron/ElvUI.".."|r",
+                width = "full",
+                type = 'description',
+                order = 11,
+            },
+
         },
     }
 

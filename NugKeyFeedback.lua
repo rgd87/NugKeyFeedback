@@ -16,6 +16,7 @@ local defaults = {
     lineIconSize = 38,
     mirrorSize = 50,
     lineDirection = "LEFT",
+    forceUseActionHook = false,
 }
 
 local isClassic = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
@@ -35,7 +36,21 @@ function NugKeyFeedback:PLAYER_LOGIN(event)
     self.db = _G.NugKeyFeedbackDB
     ns.SetupDefaults(self.db, defaults)
 
-    self.mirror = self:CreateFeedbackButton()
+    local usingActionBarAddons = IsAddOnLoaded("Bartender4") or
+        IsAddOnLoaded("Neuron") or
+        IsAddOnLoaded("ElvUI") or
+        IsAddOnLoaded("TukUI")
+
+
+    if self.db.forceUseActionHook or usingActionBarAddons then
+        self.mirror = self:CreateFeedbackButton(true)
+        self:HookUseAction()
+        NugKeyFeedback.autoDetectHookMode = usingActionBarAddons
+    else
+        self.mirror = self:CreateFeedbackButton()
+        self:HookDefaultBindings()
+    end
+
 
     self.mirror.UpdateAction = function(self, fullUpdate)
         local action = self.action
@@ -51,7 +66,6 @@ function NugKeyFeedback:PLAYER_LOGIN(event)
             CooldownFrame_Set(self.cooldown, start, duration, enable, false, modRate);
         end
     end
-    self:HookDefaultBindings(self.mirror)
 
     -- self.flash = self:CreateFlashTexture(self.mirror)
 
@@ -78,44 +92,56 @@ function NugKeyFeedback:SPELL_UPDATE_COOLDOWN(event)
     self.mirror:UpdateAction(true)
 end
 
-function NugKeyFeedback:HookDefaultBindings(mirror)
-    local ActionButtonDown = function(action)
-        if not HasAction(action) then return end
-        if IsInPetBattle() then return end
+local MirrorActionButtonDown = function(action)
+    if not HasAction(action) then return end
+    if IsInPetBattle() then return end
 
-        if mirror.action ~= action then
-            mirror.action = action
-            mirror:UpdateAction(true)
-        else
-            mirror:UpdateAction()
-        end
+    local mirror = NugKeyFeedback.mirror
 
-        mirror:Show()
-        mirror:SetAlpha(1)
-        mirror._elapsed = 0
-        if mirror:GetButtonState() == "NORMAL" then
-			mirror:SetButtonState("PUSHED");
-		end
+    if mirror.action ~= action then
+        mirror.action = action
+        mirror:UpdateAction(true)
+    else
+        mirror:UpdateAction()
     end
 
-    local ActionButtonUp = function(action)
-        if mirror:GetButtonState() == "PUSHED" then
-			mirror:SetButtonState("NORMAL");
-		end
+    mirror:Show()
+    mirror:SetAlpha(1)
+    mirror._elapsed = 0
+    mirror.pushed = true
+    if mirror:GetButtonState() == "NORMAL" then
+        mirror:SetButtonState("PUSHED");
     end
+end
 
+local MirrorActionButtonUp = function(action)
+    local mirror = NugKeyFeedback.mirror
+
+    if mirror:GetButtonState() == "PUSHED" then
+        mirror:SetButtonState("NORMAL");
+    end
+end
+
+function NugKeyFeedback:HookDefaultBindings()
     local GetActionButtonForID = _G.GetActionButtonForID
     hooksecurefunc("ActionButtonDown", function(id)
         local button = GetActionButtonForID(id)
-        return ActionButtonDown(button.action)
+        return MirrorActionButtonDown(button.action)
     end)
-    hooksecurefunc("ActionButtonUp", ActionButtonUp)
+    hooksecurefunc("ActionButtonUp", MirrorActionButtonUp)
     hooksecurefunc("MultiActionButtonDown", function(bar,id)
         local button = _G[bar.."Button"..id];
-        return ActionButtonDown(button.action)
+        return MirrorActionButtonDown(button.action)
     end)
-    hooksecurefunc("MultiActionButtonUp", ActionButtonUp)
+    hooksecurefunc("MultiActionButtonUp", MirrorActionButtonUp)
 end
+
+function NugKeyFeedback:HookUseAction()
+    hooksecurefunc("UseAction", function(action)
+        return MirrorActionButtonDown(action)
+    end)
+end
+
 
 
 function NugKeyFeedback:UNIT_SPELLCAST_SUCCEEDED(event, unit, lineID, spellID)
