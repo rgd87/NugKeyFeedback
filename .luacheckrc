@@ -110,4 +110,5 @@ globals = {
     "InterfaceOptionsFrame_OpenToCategory",
     "ReloadUI",
     "InterfaceOptionsFrame",
+    "IsAddOnLoaded",
 }
