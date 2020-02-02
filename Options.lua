@@ -75,6 +75,17 @@ function NugKeyFeedback:CreateGUI()
                     NugKeyFeedback:RefreshSettings()
                 end
             },
+            enableCastFlash = {
+                name = L"Cast Flash",
+                type = "toggle",
+                width = "full",
+                order = 4.6,
+                get = function(info) return NugKeyFeedback.db.enableCastFlash end,
+                set = function(info, v)
+                    NugKeyFeedback.db.enableCastFlash = not NugKeyFeedback.db.enableCastFlash
+                    NugKeyFeedback:RefreshSettings()
+                end
+            },
             lineIconSize = {
                 name = L"Cast Line Icon Size",
                 type = "range",

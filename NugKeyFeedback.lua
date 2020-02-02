@@ -13,6 +13,7 @@ local defaults = {
     x = 0, y = 0,
     enableCastLine = true,
     enableCooldown = true,
+    enableCastFlash = true,
     lineIconSize = 38,
     mirrorSize = 50,
     lineDirection = "LEFT",
@@ -146,13 +147,19 @@ end
 function NugKeyFeedback:UNIT_SPELLCAST_SUCCEEDED(event, unit, lineID, spellID)
     if IsPlayerSpell(spellID) then
         if spellID == 75 then return end -- Autoshot
-        local frame, isNew = self.iconPool:Acquire()
 
-        local texture = select(3,GetSpellInfo(spellID))
-        frame.icon:SetTexture(texture)
-        frame:Show()
-        frame.ag:Play()
-        -- self.flash.ag:Play()
+        if self.db.enableCastLine then
+            local frame, isNew = self.iconPool:Acquire()
+            local texture = select(3,GetSpellInfo(spellID))
+            frame.icon:SetTexture(texture)
+            frame:Show()
+            frame.ag:Play()
+        end
+
+        if self.db.enableCastFlash then
+            self.mirror.glow:Show()
+            self.mirror.glow.blink:Play()
+        end
     end
 end
 
@@ -163,8 +170,8 @@ function NugKeyFeedback:RefreshSettings()
         self.mirror.masqueGroup:ReSkin()
     end
 
+    self:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player")
     if db.enableCastLine then
-        self:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player")
         if not self.iconPool then
             self.iconPool = self:CreateLastSpellIconLine(self.mirror)
         end
@@ -179,8 +186,6 @@ function NugKeyFeedback:RefreshSettings()
         if pool.masqueGroup then
             pool.masqueGroup:ReSkin()
         end
-    else
-        self:UnregisterEvent("UNIT_SPELLCAST_SUCCEEDED")
     end
 
     if db.enableCooldown then

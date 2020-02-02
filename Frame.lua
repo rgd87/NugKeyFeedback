@@ -21,6 +21,37 @@ function NugKeyFeedback:CreateFeedbackButton(autoKeyup)
     mirror:Show()
     mirror._elapsed = 0
 
+    local glow = CreateFrame("Frame", nil, mirror)
+    glow:SetPoint("TOPLEFT", -16, 16)
+    glow:SetPoint("BOTTOMRIGHT", 16, -16)
+    local gtex = glow:CreateTexture(nil, "OVERLAY")
+    gtex:SetTexture([[Interface\SpellActivationOverlay\IconAlert]])
+    gtex:SetTexCoord(0, 66/128, 136/256, 202/256)
+    gtex:SetVertexColor(0,1,0)
+    gtex:SetAllPoints(glow)
+    mirror.glow = glow
+    glow:Hide()
+
+    local ag = glow:CreateAnimationGroup()
+    glow.blink = ag
+
+    local a1 = ag:CreateAnimation("Alpha")
+    a1:SetFromAlpha(0)
+    a1:SetToAlpha(1)
+    a1:SetDuration(0.14)
+    a1:SetOrder(2)
+
+    local a2 = ag:CreateAnimation("Alpha")
+    a2:SetFromAlpha(1)
+    a2:SetToAlpha(0)
+    a2:SetSmoothing("OUT")
+    a2:SetDuration(0.3)
+    a2:SetOrder(2)
+
+    ag:SetScript("OnFinished", function(self)
+        self:GetParent():Hide()
+    end)
+
     if autoKeyup then
         mirror:SetScript("OnUpdate", function(self, elapsed)
             self._elapsed = self._elapsed + elapsed
