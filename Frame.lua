@@ -52,6 +52,13 @@ function NugKeyFeedback:CreateFeedbackButton(autoKeyup)
         self:GetParent():Hide()
     end)
 
+    mirror.BumpFadeOut = function(self, modifier)
+        modifier = modifier or 1.5
+        if -modifier < self._elapsed then
+            self._elapsed = -modifier
+        end
+    end
+
     if autoKeyup then
         mirror:SetScript("OnUpdate", function(self, elapsed)
             self._elapsed = self._elapsed + elapsed
@@ -63,7 +70,7 @@ function NugKeyFeedback:CreateFeedbackButton(autoKeyup)
                 self.pushed = false
             end
 
-            if timePassed >= 1.5 then
+            if timePassed >= 1 then
                 local alpha = 2 - timePassed
                 if alpha <= 0 then
                     alpha = 0
@@ -77,7 +84,7 @@ function NugKeyFeedback:CreateFeedbackButton(autoKeyup)
             self._elapsed = self._elapsed + elapsed
 
             local timePassed = self._elapsed
-            if timePassed >= 1.5 then
+            if timePassed >= 1 then
                 local alpha = 2 - timePassed
                 if alpha <= 0 then
                     alpha = 0
