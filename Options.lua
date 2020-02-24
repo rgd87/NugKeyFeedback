@@ -64,6 +64,17 @@ function NugKeyFeedback:CreateGUI()
                     NugKeyFeedback:RefreshSettings()
                 end
             },
+            enableCast = {
+                name = L"Show Cast Time",
+                type = "toggle",
+                width = "full",
+                order = 4.3,
+                get = function(info) return NugKeyFeedback.db.enableCast end,
+                set = function(info, v)
+                    NugKeyFeedback.db.enableCast = not NugKeyFeedback.db.enableCast
+                    NugKeyFeedback:RefreshSettings()
+                end
+            },
             enableCastLine = {
                 name = L"Cast Line",
                 type = "toggle",

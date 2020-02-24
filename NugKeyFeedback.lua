@@ -13,6 +13,7 @@ local defaults = {
     x = 0, y = 0,
     enableCastLine = true,
     enableCooldown = true,
+    enableCast = true,
     enableCastFlash = true,
     lineIconSize = 38,
     mirrorSize = 50,
@@ -68,7 +69,7 @@ function NugKeyFeedback:PLAYER_LOGIN(event)
         if not tex then return end
         self.icon:SetTexture(tex)
 
-        if fullUpdate and NugKeyFeedback.db.enableCooldown then
+        if fullUpdate then
             self:UpdateCooldownOrCast()
         end
     end
@@ -83,26 +84,19 @@ function NugKeyFeedback:PLAYER_LOGIN(event)
         local cooldownFrame = self.cooldown
         local castDuration = self.castDuration or 0
 
-        if self.castSpellID and self.castSpellID == GetActionSpellID(action) and castDuration > cooldownDuration then
+        if NugKeyFeedback.db.enableCast and self.castSpellID and self.castSpellID == GetActionSpellID(action) and castDuration > cooldownDuration then
             cooldownFrame:SetDrawEdge(true)
             cooldownFrame:SetReverse(self.castInverted)
             CooldownFrame_Set(cooldownFrame, self.castStartTime, castDuration, true, true, 1);
-        else
+        elseif NugKeyFeedback.db.enableCooldown then
             cooldownFrame:SetDrawEdge(false)
             cooldownFrame:SetReverse(false)
             local charges, maxCharges, chargeStart, chargeDuration, chargeModRate = GetActionCharges(action);
             CooldownFrame_Set(cooldownFrame, cooldownStartTime, cooldownDuration, enable, false, modRate);
+        else
+            cooldownFrame:Hide()
         end
     end
-
-    self:RegisterUnitEvent("UNIT_SPELLCAST_START", "player")
-    self:RegisterUnitEvent("UNIT_SPELLCAST_DELAYED", "player")
-    self:RegisterUnitEvent("UNIT_SPELLCAST_STOP", "player")
-    self:RegisterUnitEvent("UNIT_SPELLCAST_FAILED", "player")
-    self:RegisterUnitEvent("UNIT_SPELLCAST_INTERRUPTED", "player")
-    self:RegisterUnitEvent("UNIT_SPELLCAST_CHANNEL_START", "player")
-    self:RegisterUnitEvent("UNIT_SPELLCAST_CHANNEL_UPDATE", "player")
-    self:RegisterUnitEvent("UNIT_SPELLCAST_CHANNEL_STOP", "player")
 
     self:SetSize(30, 30)
 
@@ -266,10 +260,28 @@ function NugKeyFeedback:RefreshSettings()
 
     if db.enableCooldown then
         self:RegisterEvent("SPELL_UPDATE_COOLDOWN")
-        self.mirror.cooldown:Show()
     else
         self:UnregisterEvent("SPELL_UPDATE_COOLDOWN")
-        self.mirror.cooldown:Hide()
+    end
+
+    if db.enableCast then
+        self:RegisterUnitEvent("UNIT_SPELLCAST_START", "player")
+        self:RegisterUnitEvent("UNIT_SPELLCAST_DELAYED", "player")
+        self:RegisterUnitEvent("UNIT_SPELLCAST_STOP", "player")
+        self:RegisterUnitEvent("UNIT_SPELLCAST_FAILED", "player")
+        self:RegisterUnitEvent("UNIT_SPELLCAST_INTERRUPTED", "player")
+        self:RegisterUnitEvent("UNIT_SPELLCAST_CHANNEL_START", "player")
+        self:RegisterUnitEvent("UNIT_SPELLCAST_CHANNEL_UPDATE", "player")
+        self:RegisterUnitEvent("UNIT_SPELLCAST_CHANNEL_STOP", "player")
+    else
+        self:UnregisterEvent("UNIT_SPELLCAST_START")
+        self:UnregisterEvent("UNIT_SPELLCAST_DELAYED")
+        self:UnregisterEvent("UNIT_SPELLCAST_STOP")
+        self:UnregisterEvent("UNIT_SPELLCAST_FAILED")
+        self:UnregisterEvent("UNIT_SPELLCAST_INTERRUPTED")
+        self:UnregisterEvent("UNIT_SPELLCAST_CHANNEL_START")
+        self:UnregisterEvent("UNIT_SPELLCAST_CHANNEL_UPDATE")
+        self:UnregisterEvent("UNIT_SPELLCAST_CHANNEL_STOP")
     end
 end
 
