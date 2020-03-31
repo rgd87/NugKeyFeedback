@@ -76,7 +76,7 @@ function NugKeyFeedback:PLAYER_LOGIN(event)
 
     self.mirror.UpdateCooldownOrCast = function(self)
         local action = self.action
-        -- if not action then return end
+        if not action then return end
 
         local isCastingLastSpell = self.castSpellID == GetActionSpellID(action)
         local cooldownStartTime, cooldownDuration, enable, modRate = GetActionCooldown(action);
