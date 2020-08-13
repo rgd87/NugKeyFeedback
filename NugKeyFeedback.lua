@@ -13,6 +13,7 @@ local defaults = {
     x = 0, y = 0,
     enableCastLine = true,
     enableCooldown = true,
+    enablePushEffect = true,
     enableCast = true,
     enableCastFlash = true,
     lineIconSize = 38,
@@ -76,7 +77,7 @@ function NugKeyFeedback:PLAYER_LOGIN(event)
 
     self.mirror.UpdateCooldownOrCast = function(self)
         local action = self.action
-        -- if not action then return end
+        if not action then return end
 
         local isCastingLastSpell = self.castSpellID == GetActionSpellID(action)
         local cooldownStartTime, cooldownDuration, enable, modRate = GetActionCooldown(action);
@@ -180,6 +181,13 @@ local MirrorActionButtonDown = function(action)
     mirror:BumpFadeOut()
     mirror.pushed = true
     if mirror:GetButtonState() == "NORMAL" then
+        if mirror.pushedCircle then
+            if mirror.pushedCircle.grow:IsPlaying() then
+                mirror.pushedCircle.grow:Stop()
+            end
+            mirror.pushedCircle:Show()
+            mirror.pushedCircle.grow:Play()
+        end
         mirror:SetButtonState("PUSHED");
     end
 end

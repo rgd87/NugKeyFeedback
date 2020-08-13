@@ -111,4 +111,8 @@ globals = {
     "ReloadUI",
     "InterfaceOptionsFrame",
     "IsAddOnLoaded",
+    "GetActionInfo",
+    "GetMacroSpell",
+    "UnitCastingInfo",
+    "UnitChannelInfo",
 }

@@ -35,11 +35,11 @@ function NugKeyFeedback:CreateFeedbackButton(autoKeyup)
     local ag = glow:CreateAnimationGroup()
     glow.blink = ag
 
-    local a1 = ag:CreateAnimation("Alpha")
-    a1:SetFromAlpha(0)
-    a1:SetToAlpha(1)
-    a1:SetDuration(0.14)
-    a1:SetOrder(2)
+    -- local a1 = ag:CreateAnimation("Alpha")
+    -- a1:SetFromAlpha(0)
+    -- a1:SetToAlpha(1)
+    -- a1:SetDuration(0.14)
+    -- a1:SetOrder(1)
 
     local a2 = ag:CreateAnimation("Alpha")
     a2:SetFromAlpha(1)
@@ -51,6 +51,40 @@ function NugKeyFeedback:CreateFeedbackButton(autoKeyup)
     ag:SetScript("OnFinished", function(self)
         self:GetParent():Hide()
     end)
+
+    if db.enablePushEffect then
+        local pushedCircle = CreateFrame("Frame", nil, mirror)
+        local size = db.mirrorSize
+        pushedCircle:SetSize(size, size)
+        pushedCircle:SetPoint("CENTER", 0, 0)
+        local pctex = pushedCircle:CreateTexture(nil, "OVERLAY")
+        pctex:SetTexture([[Interface\AddOns\NugKeyFeedback\ff14_pressed.tga]])
+        pctex:SetBlendMode("ADD")
+        pctex:SetAllPoints(pushedCircle)
+        mirror.pushedCircle = pushedCircle
+        pushedCircle:Hide()
+
+        local gag = pushedCircle:CreateAnimationGroup()
+        pushedCircle.grow = gag
+
+        local ga1 = gag:CreateAnimation("Scale")
+        ga1:SetFromScale(0.1, 0.1)
+        ga1:SetToScale(1.3, 1.3)
+        ga1:SetDuration(0.3)
+        ga1:SetOrder(2)
+
+        local ga2 = gag:CreateAnimation("Alpha")
+        ga2:SetFromAlpha(0.5)
+        ga2:SetToAlpha(0)
+        -- ga2:SetSmoothing("OUT")
+        ga2:SetDuration(0.2)
+        ga2:SetStartDelay(0.1)
+        ga2:SetOrder(2)
+
+        gag:SetScript("OnFinished", function(self)
+            self:GetParent():Hide()
+        end)
+    end
 
     mirror.BumpFadeOut = function(self, modifier)
         modifier = modifier or 1.5

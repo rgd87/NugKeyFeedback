@@ -75,6 +75,19 @@ function NugKeyFeedback:CreateGUI()
                     NugKeyFeedback:RefreshSettings()
                 end
             },
+            enablePushEffect = {
+                name = L"FF14 Push Effect",
+                type = "toggle",
+                width = "full",
+                order = 4.4,
+                confirm = true,
+                confirmText = L"Warning: Requires UI reloading.",
+                get = function(info) return NugKeyFeedback.db.enablePushEffect end,
+                set = function(info, v)
+                    NugKeyFeedback.db.enablePushEffect = not NugKeyFeedback.db.enablePushEffect
+                    ReloadUI()
+                end
+            },
             enableCastLine = {
                 name = L"Cast Line",
                 type = "toggle",
