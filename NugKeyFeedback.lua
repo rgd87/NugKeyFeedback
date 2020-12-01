@@ -120,6 +120,7 @@ end
 
 function NugKeyFeedback.UNIT_SPELLCAST_START(self,event, unit, _castID, spellID)
     local name, text, texture, startTime, endTime, isTradeSkill, castID, notInterruptible = UnitCastingInfo(unit)
+    if not startTime then return end -- With heavy lags it's nil sometimes
     local mirror = self.mirror
     mirror.castInverted = false
     mirror.castID = castID
