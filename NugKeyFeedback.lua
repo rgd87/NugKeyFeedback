@@ -205,7 +205,9 @@ function NugKeyFeedback:HookDefaultBindings()
     local GetActionButtonForID = _G.GetActionButtonForID
     hooksecurefunc("ActionButtonDown", function(id)
         local button = GetActionButtonForID(id)
-        return MirrorActionButtonDown(button.action)
+        if button then
+            return MirrorActionButtonDown(button.action)
+        end
     end)
     hooksecurefunc("ActionButtonUp", MirrorActionButtonUp)
     hooksecurefunc("MultiActionButtonDown", function(bar,id)
