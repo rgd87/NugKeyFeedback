@@ -25,6 +25,12 @@ local defaults = {
 local isClassic = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
 local dummy = function() end
 local IsInPetBattle = isClassic and dummy or C_PetBattles.IsInBattle
+local UnitCastingInfo = UnitCastingInfo
+local UnitChannelInfo = UnitChannelInfo
+if isClassic then
+    UnitCastingInfo = CastingInfo
+    UnitChannelInfo = ChannelInfo
+end
 
 local firstTimeUse = false
 

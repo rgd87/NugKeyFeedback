@@ -115,4 +115,6 @@ globals = {
     "GetMacroSpell",
     "UnitCastingInfo",
     "UnitChannelInfo",
+    "CastingInfo",
+    "ChannelInfo",
 }
