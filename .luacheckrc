@@ -114,6 +114,7 @@ globals = {
     "GetActionInfo",
     "GetMacroSpell",
     "UnitCastingInfo",
+    "GetBuildInfo",
     "UnitChannelInfo",
     "CastingInfo",
     "ChannelInfo",

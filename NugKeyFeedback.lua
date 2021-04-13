@@ -22,7 +22,8 @@ local defaults = {
     forceUseActionHook = false,
 }
 
-local isClassic = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
+local APILevel = math.floor(select(4,GetBuildInfo())/10000)
+local isClassic = APILevel < 5 --WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
 local dummy = function() end
 local IsInPetBattle = isClassic and dummy or C_PetBattles.IsInBattle
 local UnitCastingInfo = UnitCastingInfo
