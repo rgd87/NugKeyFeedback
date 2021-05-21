@@ -8,6 +8,9 @@ function NugKeyFeedback:CreateFeedbackButton(autoKeyup)
     local mirror = CreateFrame("Button", "NugKeyFeedbackMirror", self, "ActionButtonTemplate")
     mirror:SetHeight(db.mirrorSize)
     mirror:SetWidth(db.mirrorSize)
+    mirror.NormalTexture:ClearAllPoints()
+    mirror.NormalTexture:SetPoint("TOPLEFT", -15, 15)
+    mirror.NormalTexture:SetPoint("BOTTOMRIGHT", 15, -15)
 
     mirror.cooldown:SetEdgeTexture("Interface\\Cooldown\\edge");
     mirror.cooldown:SetSwipeColor(0, 0, 0);
