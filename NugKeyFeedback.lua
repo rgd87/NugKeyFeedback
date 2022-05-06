@@ -185,6 +185,7 @@ local MirrorActionButtonDown = function(action)
     end
 
     mirror:Show()
+    mirror._elapsed = 0
     mirror:SetAlpha(1)
     mirror:BumpFadeOut()
     mirror.pushed = true
