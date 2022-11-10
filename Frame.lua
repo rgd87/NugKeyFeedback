@@ -9,6 +9,7 @@ local function MakeCompatibleAnimation(anim)
         anim.SetScaleFrom = anim.SetFromScale
         anim.SetScaleTo = anim.SetToScale
     end
+    return anim
 end
 
 function NugKeyFeedback:CreateFeedbackButton(autoKeyup)
