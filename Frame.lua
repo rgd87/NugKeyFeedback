@@ -158,11 +158,6 @@ local PoolIconCreationFunc = function(pool)
     local id = pool.idCounter
     pool.idCounter = pool.idCounter + 1
     local f = CreateFrame("Button", "NugKeyFeedbackPoolIcon"..id, hdr, "ActionButtonTemplate")
-
-    if pool.masqueGroup then
-        pool.masqueGroup:AddButton(f)
-    end
-
     f:EnableMouse(false)
     f:SetHeight(db.lineIconSize)
     f:SetWidth(db.lineIconSize)
@@ -273,6 +268,11 @@ local function PoolIconResetterFunc(pool, f)
     f:ClearAllPoints()
     local parent = pool.parent
     f:SetPoint(scaleOrigin, parent, revOrigin, 0,0)
+
+    -- complete setup of the button before handing it over to masque, otherwise it doesnt reliably get set
+    if pool.masqueGroup then
+        pool.masqueGroup:AddButton(f)
+    end
 end
 
 function NugKeyFeedback:CreateLastSpellIconLine(parent)
