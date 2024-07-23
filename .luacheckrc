@@ -118,4 +118,6 @@ globals = {
     "UnitChannelInfo",
     "CastingInfo",
     "ChannelInfo",
+    "C_Spell",
+    "C_AddOns",
 }

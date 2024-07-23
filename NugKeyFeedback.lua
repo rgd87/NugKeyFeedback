@@ -22,6 +22,22 @@ local defaults = {
     forceUseActionHook = false,
 }
 
+
+if C_Spell.GetSpellInfo then
+    local C_Spell_GetSpellInfo = C_Spell.GetSpellInfo
+    ns.GetSpellInfo = function(spellId)
+        local info = C_Spell_GetSpellInfo(spellId)
+        if info then
+            return info.name, nil, info.iconID
+        end
+    end
+    ns.GetSpellTexture = C_Spell.GetSpellTexture
+else
+    ns.GetSpellInfo = _G.GetSpellInfo
+    ns.GetSpellTexture = _G.GetSpellTexture
+end
+local GetSpellInfo = ns.GetSpellInfo
+
 local APILevel = math.floor(select(4,GetBuildInfo())/10000)
 local isClassic = APILevel < 5 --WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
 local dummy = function() end
@@ -32,6 +48,7 @@ if isClassic then
     UnitCastingInfo = CastingInfo
     UnitChannelInfo = ChannelInfo
 end
+local IsAddOnLoaded = IsAddOnLoaded or C_AddOns.IsAddOnLoaded
 
 local firstTimeUse = false
 
@@ -267,7 +284,7 @@ function NugKeyFeedback:RefreshSettings()
 
         local pool = self.iconPool
         pool:ReleaseAll()
-        for i,f in pool:EnumerateInactive() do
+        for i,f in ipairs(pool.inactiveObjects) do
             -- f:SetHeight(db.lineIconSize)
             -- f:SetWidth(db.lineIconSize)
             pool:resetterFunc(f)
