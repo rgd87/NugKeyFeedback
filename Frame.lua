@@ -16,11 +16,15 @@ function NugKeyFeedback:CreateFeedbackButton(autoKeyup)
     local db = self.db
 
     local mirror = CreateFrame("Button", "NugKeyFeedbackMirror", self, "ActionButtonTemplate")
-    mirror:SetHeight(db.mirrorSize)
-    mirror:SetWidth(db.mirrorSize)
-    mirror.NormalTexture:ClearAllPoints()
-    mirror.NormalTexture:SetPoint("TOPLEFT", -15, 15)
-    mirror.NormalTexture:SetPoint("BOTTOMRIGHT", 15, -15)
+    -- mirror:SetHeight(db.mirrorSize)
+    -- mirror:SetWidth(db.mirrorSize)
+    mirror:SetSize(45, 45)
+    -- mirror.NormalTexture:ClearAllPoints()
+    -- local normalOffset = 15
+    -- mirror.NormalTexture:SetPoint("TOPLEFT", -15, 15)
+    -- mirror.NormalTexture:SetPoint("BOTTOMRIGHT", 15, -15)
+
+    mirror:SetScale(db.mirrorScale)
 
     mirror.cooldown:SetEdgeTexture("Interface\\Cooldown\\edge");
     mirror.cooldown:SetSwipeColor(0, 0, 0);
@@ -164,8 +168,9 @@ local PoolIconCreationFunc = function(pool)
     end
 
     f:EnableMouse(false)
-    f:SetHeight(db.lineIconSize)
-    f:SetWidth(db.lineIconSize)
+    f:SetScale(db.lineIconScale)
+    -- f:SetHeight(db.lineIconSize)
+    -- f:SetWidth(db.lineIconSize)
     f:SetPoint("BOTTOM", hdr, "BOTTOM",0, -0)
 
     local t = f.icon
@@ -230,8 +235,9 @@ end
 local function PoolIconResetterFunc(pool, f)
     local db = NugKeyFeedback.db
 
-    f:SetHeight(db.lineIconSize)
-    f:SetWidth(db.lineIconSize)
+    -- f:SetHeight(db.lineIconSize)
+    -- f:SetWidth(db.lineIconSize)
+    f:SetScale(db.lineIconScale)
 
     f.ag:Stop()
 

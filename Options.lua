@@ -39,6 +39,21 @@ function NugKeyFeedback:CreateGUI()
                 order = 3,
             },
 
+            mirrorScale = {
+                name = L"Button Scale",
+                type = "range",
+                width = "full",
+                get = function(info) return NugKeyFeedback.db.mirrorScale end,
+                set = function(info, v)
+                    NugKeyFeedback.db.mirrorScale = tonumber(v)
+                    NugKeyFeedback:RefreshSettings()
+                end,
+                min = 0.5,
+                max = 2,
+                step = 0.01,
+                order = 4,
+            },
+            --[[
             mirrorSize = {
                 name = L"Button Size",
                 type = "range",
@@ -53,6 +68,7 @@ function NugKeyFeedback:CreateGUI()
                 step = 1,
                 order = 4,
             },
+            ]]
             enableCooldown = {
                 name = L"Show Cooldown",
                 type = "toggle",
@@ -64,6 +80,7 @@ function NugKeyFeedback:CreateGUI()
                     NugKeyFeedback:RefreshSettings()
                 end
             },
+            --[[
             enableCast = {
                 name = L"Show Cast Time",
                 type = "toggle",
@@ -75,6 +92,7 @@ function NugKeyFeedback:CreateGUI()
                     NugKeyFeedback:RefreshSettings()
                 end
             },
+            ]]
             enablePushEffect = {
                 name = L"FF14 Push Effect",
                 type = "toggle",
@@ -110,6 +128,22 @@ function NugKeyFeedback:CreateGUI()
                     NugKeyFeedback:RefreshSettings()
                 end
             },
+            lineIconScale = {
+                name = L"Cast Line Icon Size",
+                type = "range",
+                disabled = function() return not NugKeyFeedback.db.enableCastLine end,
+                width = "full",
+                get = function(info) return NugKeyFeedback.db.lineIconScale end,
+                set = function(info, v)
+                    NugKeyFeedback.db.lineIconScale = tonumber(v)
+                    NugKeyFeedback:RefreshSettings()
+                end,
+                min = 0.3,
+                max = 2,
+                step = 0.05,
+                order = 5,
+            },
+            --[[
             lineIconSize = {
                 name = L"Cast Line Icon Size",
                 type = "range",
@@ -125,6 +159,7 @@ function NugKeyFeedback:CreateGUI()
                 step = 1,
                 order = 5,
             },
+            ]]
             lineDirection = {
                 name = L"Cast Line Direction",
                 type = 'select',
@@ -183,7 +218,7 @@ function NugKeyFeedback:CreateGUI()
 end
 
 function NugKeyFeedback:HookOptionsFrame()
-    CreateFrame('Frame', nil, InterfaceOptionsFrame):SetScript('OnShow', function(frame)
+    CreateFrame('Frame', nil, SettingsPanel or InterfaceOptionsFrame):SetScript('OnShow', function(frame)
         frame:SetScript('OnShow', nil)
 
         if not self.optionsPanel then

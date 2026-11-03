@@ -118,6 +118,10 @@ globals = {
     "UnitChannelInfo",
     "CastingInfo",
     "ChannelInfo",
+    "C_ActionBar",
+    "InCombatLockdown",
+    "Settings",
+    "SettingsPanel",
     "C_Spell",
     "C_AddOns",
 }

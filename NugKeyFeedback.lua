@@ -14,10 +14,12 @@ local defaults = {
     enableCastLine = true,
     enableCooldown = true,
     enablePushEffect = true,
-    enableCast = true,
+    enableCast = false,
     enableCastFlash = true,
     lineIconSize = 38,
-    mirrorSize = 50,
+    lineIconScale = 0.7,
+    -- mirrorSize = 50,
+    mirrorScale = 1.2,
     lineDirection = "LEFT",
     forceUseActionHook = false,
 }
@@ -44,10 +46,6 @@ local dummy = function() end
 local IsInPetBattle = isClassic and dummy or C_PetBattles.IsInBattle
 local UnitCastingInfo = UnitCastingInfo
 local UnitChannelInfo = UnitChannelInfo
-if isClassic then
-    UnitCastingInfo = CastingInfo
-    UnitChannelInfo = ChannelInfo
-end
 local IsAddOnLoaded = IsAddOnLoaded or C_AddOns.IsAddOnLoaded
 
 local firstTimeUse = false
@@ -94,9 +92,9 @@ function NugKeyFeedback:PLAYER_LOGIN(event)
         if not tex then return end
         self.icon:SetTexture(tex)
 
-        if fullUpdate then
+        -- if fullUpdate then
             self:UpdateCooldownOrCast()
-        end
+        -- enda
     end
 
     self.mirror.UpdateCooldownOrCast = function(self)
@@ -109,15 +107,22 @@ function NugKeyFeedback:PLAYER_LOGIN(event)
         local cooldownFrame = self.cooldown
         local castDuration = self.castDuration or 0
 
+        --[[
         if NugKeyFeedback.db.enableCast and self.castSpellID and self.castSpellID == GetActionSpellID(action) and castDuration > cooldownDuration then
             cooldownFrame:SetDrawEdge(true)
             cooldownFrame:SetReverse(self.castInverted)
             CooldownFrame_Set(cooldownFrame, self.castStartTime, castDuration, true, true, 1);
-        elseif NugKeyFeedback.db.enableCooldown then
+        else
+        ]]
+        if NugKeyFeedback.db.enableCooldown then
             cooldownFrame:SetDrawEdge(false)
             cooldownFrame:SetReverse(false)
-            local charges, maxCharges, chargeStart, chargeDuration, chargeModRate = GetActionCharges(action);
-            CooldownFrame_Set(cooldownFrame, cooldownStartTime, cooldownDuration, enable, false, modRate);
+            local ignoreGCD = false
+            local duration = C_ActionBar.GetActionCooldownDuration(action, ignoreGCD)
+            -- cooldownFrame:SetUseAuraDisplayTime(true)
+            cooldownFrame:SetCooldownFromDurationObject(duration)
+            -- local charges, maxCharges, chargeStart, chargeDuration, chargeModRate = GetActionCharges(action);
+            -- CooldownFrame_Set(cooldownFrame, cooldownStartTime, cooldownDuration, enable, false, modRate);
         else
             cooldownFrame:Hide()
         end
@@ -142,6 +147,7 @@ function NugKeyFeedback:PLAYER_LOGOUT(event)
 end
 
 
+--[[
 function NugKeyFeedback.UNIT_SPELLCAST_START(self,event, unit, _castID, spellID)
     local name, text, texture, startTime, endTime, isTradeSkill, castID, notInterruptible = UnitCastingInfo(unit)
     if not startTime then return end -- With heavy lags it's nil sometimes
@@ -182,7 +188,7 @@ function NugKeyFeedback.UNIT_SPELLCAST_FAILED(self, event, unit,castID)
 end
 NugKeyFeedback.UNIT_SPELLCAST_INTERRUPTED = NugKeyFeedback.UNIT_SPELLCAST_STOP
 NugKeyFeedback.UNIT_SPELLCAST_CHANNEL_STOP = NugKeyFeedback.UNIT_SPELLCAST_STOP
-
+]]
 
 function NugKeyFeedback:SPELL_UPDATE_COOLDOWN(event)
     self.mirror:UpdateAction(true)
@@ -271,7 +277,8 @@ end
 
 function NugKeyFeedback:RefreshSettings()
     local db = self.db
-    self.mirror:SetSize(db.mirrorSize, db.mirrorSize)
+    -- self.mirror:SetSize(db.mirrorSize, db.mirrorSize)
+    self.mirror:SetScale(db.mirrorScale)
     if self.mirror.masqueGroup then
         self.mirror.masqueGroup:ReSkin()
     end
@@ -294,12 +301,15 @@ function NugKeyFeedback:RefreshSettings()
         end
     end
 
+    --[[
     if db.enableCooldown then
         self:RegisterEvent("SPELL_UPDATE_COOLDOWN")
     else
         self:UnregisterEvent("SPELL_UPDATE_COOLDOWN")
     end
+    ]]
 
+    --[[
     if db.enableCast then
         self:RegisterUnitEvent("UNIT_SPELLCAST_START", "player")
         self:RegisterUnitEvent("UNIT_SPELLCAST_DELAYED", "player")
@@ -319,6 +329,7 @@ function NugKeyFeedback:RefreshSettings()
         self:UnregisterEvent("UNIT_SPELLCAST_CHANNEL_UPDATE")
         self:UnregisterEvent("UNIT_SPELLCAST_CHANNEL_STOP")
     end
+    ]]
 end
 
 
