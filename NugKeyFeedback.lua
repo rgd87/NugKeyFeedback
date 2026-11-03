@@ -324,10 +324,11 @@ end
 
 function NugKeyFeedback.SlashCmd(msg)
     if not NugKeyFeedback.optionsPanel then
-        NugKeyFeedback.optionsPanel = NugKeyFeedback:CreateGUI()
+        NugKeyFeedback.optionsPanel, NugKeyFeedback.categoryID = NugKeyFeedback:CreateGUI()
     end
-    InterfaceOptionsFrame_OpenToCategory("NugKeyFeedback")
-    InterfaceOptionsFrame_OpenToCategory("NugKeyFeedback")
+    if NugKeyFeedback.optionsPanel and not InCombatLockdown() then
+        Settings.OpenToCategory(NugKeyFeedback.categoryID)
+    end
 end
 
 

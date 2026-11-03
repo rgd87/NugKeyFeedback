@@ -177,9 +177,9 @@ function NugKeyFeedback:CreateGUI()
     AceConfigRegistry:RegisterOptionsTable("NugKeyFeedbackOptions", opt)
 
     local AceConfigDialog = LibStub("AceConfigDialog-3.0")
-    local panelFrame = AceConfigDialog:AddToBlizOptions("NugKeyFeedbackOptions", "NugKeyFeedback")
+    local panelFrame, categoryID = AceConfigDialog:AddToBlizOptions("NugKeyFeedbackOptions", "NugKeyFeedback")
 
-    return panelFrame
+    return panelFrame, categoryID
 end
 
 function NugKeyFeedback:HookOptionsFrame()
@@ -187,7 +187,7 @@ function NugKeyFeedback:HookOptionsFrame()
         frame:SetScript('OnShow', nil)
 
         if not self.optionsPanel then
-            self.optionsPanel = self:CreateGUI()
+            self.optionsPanel, self.categoryID = self:CreateGUI()
         end
     end)
 end
